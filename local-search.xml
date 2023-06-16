@@ -4,6 +4,31 @@
   
   
   <entry>
+    <title>schema registry口令认证配置</title>
+    <link href="/2023/06/16/schema-registry%E5%8F%A3%E4%BB%A4%E8%AE%A4%E8%AF%81%E9%85%8D%E7%BD%AE/"/>
+    <url>/2023/06/16/schema-registry%E5%8F%A3%E4%BB%A4%E8%AE%A4%E8%AF%81%E9%85%8D%E7%BD%AE/</url>
+    
+    <content type="html"><![CDATA[<blockquote><p>由于发现schema registry相关资料较少，主要在此介绍其口令认证配置方式。</p></blockquote><hr><h2 id="1-安装包"><a href="#1-安装包" class="headerlink" title="1. 安装包"></a>1. 安装包</h2><p>在 <a href="https://www.confluent.io/previous-versions/">schema registry安装包下载 </a> 下载需要的版本，并解压。</p><hr><h2 id="2-配置"><a href="#2-配置" class="headerlink" title="2. 配置"></a>2. 配置</h2><p>配置文件位于<strong>etc&#x2F;schema-registry</strong>目录下，口令认证的话首先需要创建文件记录账号用户名密码及对应的角色。</p><p>文件schema-registry-password-file:</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">user:password,role<br></code></pre></td></tr></table></figure><hr><p>然后需要创建jaas文件schema-registry-jaas-config.conf，读取用户名密码配置:</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">SchemaRegistry-Props &#123;<br>  org.eclipse.jetty.jaas.spi.PropertyFileLoginModule required<br>  file=<span class="hljs-string">&quot;&#123;addr&#125;/schema-registry-password-file&quot;</span><br>  debug=<span class="hljs-string">&quot;false&quot;</span>;<br>&#125;;<br></code></pre></td></tr></table></figure><hr><p>最后就是schema-registry.properties的配置。</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">listeners=http://&#123;ip&#125;:8081<br></code></pre></td></tr></table></figure><p>配置url和port。</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># basic auth</span><br>authentication.method=BASIC<br>authentication.roles=admin,user<br>authentication.realm=SchemaRegistry-Props<br><br>basic.auth.credentials.source=USER_INFO<br>basic.auth.user.info=user:password<br><br>mode.mutability=<span class="hljs-literal">true</span><br></code></pre></td></tr></table></figure><hr><p>如果kafka有口令认证的话，要注意加上对应的配置：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">kafkastore.bootstrap.servers=SASL_PLAINTEXT://&#123;ip&#125;:9092<br><br><span class="hljs-comment"># kafka auth</span><br>kafkastore.security.protocol=SASL_PLAINTEXT<br>kafkastore.sasl.mechanism=PLAIN<br>kafkastore.sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username=<span class="hljs-string">&quot;user&quot;</span> password=<span class="hljs-string">&quot;password&quot;</span>;<br></code></pre></td></tr></table></figure><hr><h2 id="3-启动"><a href="#3-启动" class="headerlink" title="3. 启动"></a>3. 启动</h2><p>启动脚本在<strong>bin</strong>目录下。</p><p>由于需要导入参数和后台启动，建议写个脚本。</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">export</span> SCHEMA_REGISTRY_OPTS=-Djava.security.auth.login.config=&#123;addr&#125;/schema-registry-jaas-config.conf<br>/usr/local/schema-registry/bin/schema-registry-start /usr/local/schema-registry/etc/schema-registry/schema-registry.properties &gt;&gt; &#123;<span class="hljs-built_in">log</span> file&#125; 2&gt;&amp;1 &amp;<br></code></pre></td></tr></table></figure><p>将{log file}替换为实际输出日志的位置。</p><hr><h2 id="4-验证"><a href="#4-验证" class="headerlink" title="4. 验证"></a>4. 验证</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">curl  http://&#123;ip&#125;:8081/subjects<br></code></pre></td></tr></table></figure><p>会响应</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">&#123;<span class="hljs-string">&quot;error_code&quot;</span>:401,<span class="hljs-string">&quot;message&quot;</span>:<span class="hljs-string">&quot;Unauthorized&quot;</span>&#125;<br></code></pre></td></tr></table></figure><p>因为需要加上用户名密码:</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">curl -u user:password http://&#123;ip&#125;:8081/subjects<br></code></pre></td></tr></table></figure><p>得到的响应是一个列表就证明成功啦！</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>operate</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>schema-registry</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>Kafka单机搭建(信任认证/口令认证)</title>
     <link href="/2023/06/16/Kafka%E5%8D%95%E6%9C%BA%E6%90%AD%E5%BB%BA/"/>
     <url>/2023/06/16/Kafka%E5%8D%95%E6%9C%BA%E6%90%AD%E5%BB%BA/</url>
