@@ -16,24 +16,22 @@
   <meta name="author" content="Shen-Xmas">
   <meta name="keywords" content="">
   
-    <meta name="description" content="由于发现schema registry相关资料较少，主要在此介绍其口令认证配置方式。">
+    <meta name="description" content="Kafka详细单机版搭建教程，包含信任认证和口令认证两种方式。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="schema registry口令认证配置">
-<meta property="og:url" content="https://shen-xmas.github.io/2023/06/16/schema-registry%E5%8F%A3%E4%BB%A4%E8%AE%A4%E8%AF%81%E9%85%8D%E7%BD%AE/index.html">
+<meta property="og:title" content="Kafka单机搭建(信任认证&#x2F;口令认证)">
+<meta property="og:url" content="https://shen-xmas.github.io/2023/06/16/Kafka%E5%8D%95%E6%9C%BA%E6%90%AD%E5%BB%BA/index.html">
 <meta property="og:site_name" content="Shen-Xmas">
-<meta property="og:description" content="由于发现schema registry相关资料较少，主要在此介绍其口令认证配置方式。">
+<meta property="og:description" content="Kafka详细单机版搭建教程，包含信任认证和口令认证两种方式。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://shen-xmas.github.io/2023/06/16/schema-registry%E5%8F%A3%E4%BB%A4%E8%AE%A4%E8%AF%81%E9%85%8D%E7%BD%AE/schemaregistry.png">
-<meta property="article:published_time" content="2023-06-16T09:50:27.000Z">
-<meta property="article:modified_time" content="2023-09-27T03:44:48.273Z">
+<meta property="article:published_time" content="2023-06-16T09:07:17.000Z">
+<meta property="article:modified_time" content="2023-09-07T04:02:42.161Z">
 <meta property="article:author" content="Shen-Xmas">
-<meta property="article:tag" content="schema-registry">
+<meta property="article:tag" content="kafka">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://shen-xmas.github.io/2023/06/16/schema-registry%E5%8F%A3%E4%BB%A4%E8%AE%A4%E8%AF%81%E9%85%8D%E7%BD%AE/schemaregistry.png">
   
   
   
-  <title>schema registry口令认证配置 - Shen-Xmas</title>
+  <title>Kafka单机搭建(信任认证/口令认证) - Shen-Xmas</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -216,7 +214,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle">schema registry口令认证配置</span>
+            <span id="subtitle">Kafka单机搭建(信任认证/口令认证)</span>
           
         </div>
 
@@ -232,7 +230,7 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2023-06-16 17:50" pubdate>
+        <time datetime="2023-06-16 17:07" pubdate>
           2023年6月16日 下午
         </time>
       </span>
@@ -244,7 +242,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.6k 字
+          2.8k 字
         
       </span>
     
@@ -255,7 +253,7 @@
         
         
         
-          14 分钟
+          24 分钟
         
       </span>
     
@@ -301,56 +299,68 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">schema registry口令认证配置</h1>
+            <h1 style="display: none">Kafka单机搭建(信任认证/口令认证)</h1>
             
             
               <div class="markdown-body">
                 
-                <blockquote>
-<p>由于发现schema registry相关资料较少，主要在此介绍其口令认证配置方式。</p>
+                <p>由于在学习Kafka的过程中发现详细全面的Kafka搭建及Schema Registry搭建资料较少，踩坑较多，所以输出这篇记录我的Kafka搭建过程。</p>
+<h2 id="1-信任认证Kafka搭建"><a href="#1-信任认证Kafka搭建" class="headerlink" title="1. 信任认证Kafka搭建"></a>1. 信任认证Kafka搭建</h2><h3 id="1-下载安装包"><a href="#1-下载安装包" class="headerlink" title="1. 下载安装包"></a>1. 下载安装包</h3><p>首先第一步下载Kafka对应的安装包， 在 <a target="_blank" rel="noopener" href="https://kafka.apache.org/downloads">Kafka安装包下载地址</a> 中下载自己需要版本的包，注意下载Binary downloads下的包，不是src包。</p>
+<p>本次我是用的是kafka_2.13-2.8.2.tgz，其中2.13为Scala版本，2.8.2才是Kafka的版本。</p>
+<h3 id="2-解压"><a href="#2-解压" class="headerlink" title="2. 解压"></a>2. 解压</h3><p>解压Kafka包到指定目录，我选择的是&#x2F;usr&#x2F;local&#x2F;kafka。</p>
+<h3 id="3-Zookeeper"><a href="#3-Zookeeper" class="headerlink" title="3. Zookeeper"></a>3. Zookeeper</h3><p>目前装的这个版本的Kafka还是依赖Zookeeper的。</p>
+<h4 id="1-配置"><a href="#1-配置" class="headerlink" title="1. 配置"></a>1. 配置</h4><p>Kafka安装包自带Zookeeper，配置文件位于<strong>config&#x2F;zookeeper.properties</strong>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">dataDir=/tmp/zookeeper<br>clientPort=2181<br>maxClientCnxns=60<br>admin.enableServer=<span class="hljs-literal">false</span><br><span class="hljs-comment"># admin.serverPort=8080</span><br></code></pre></td></tr></table></figure>
+
+<p>其中，dataDir为数据目录，主要存储事务日志和快照；</p>
+<p>maxClientCnxns为ZooKeeper 服务器与客户端的最大连接数；</p>
+<p>admin.enableServer指定是否启用远程 JMX 服务器。</p>
+<h4 id="2-启动"><a href="#2-启动" class="headerlink" title="2. 启动"></a>2. 启动</h4><p>信任认证直接正常脚本启动就好了。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">./zookeeper-server-start.sh /usr/local/kafka/config/zookeeper.properties  &gt;&gt; &#123;日志输出目的地&#125; 2&gt;&amp;1 &amp;<br></code></pre></td></tr></table></figure>
+
+
+
+<h3 id="4-Kafka"><a href="#4-Kafka" class="headerlink" title="4. Kafka"></a>4. Kafka</h3><h4 id="1-配置-1"><a href="#1-配置-1" class="headerlink" title="1. 配置"></a>1. 配置</h4><p>配置文件位于<strong>config&#x2F;server.properties</strong>。</p>
+<p>信任认证的话：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">listeners=PLAINTEXT://&#123;ip&#125;:9092<br></code></pre></td></tr></table></figure>
+
+<p>如果zookeeper改了端口记得改对应的。其他按需改就好。</p>
+<h4 id="2-启动-1"><a href="#2-启动-1" class="headerlink" title="2. 启动"></a>2. 启动</h4><p>这里也是直接正常脚本读配置启动就好了。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">/usr/local/kafka/bin/kafka-server-start.sh /usr/local/kafka/config/server.properties  &gt;&gt; &#123;日志输出目的地&#125; 2&gt;&amp;1 &amp;<br></code></pre></td></tr></table></figure>
+
+
+
+
+
+<h2 id="2-口令认证Kafka搭建"><a href="#2-口令认证Kafka搭建" class="headerlink" title="2. 口令认证Kafka搭建"></a>2. 口令认证Kafka搭建</h2><blockquote>
+<p>一样的操作在此不做赘述。主要讲配置和启动的不同。</p>
 </blockquote>
-<hr>
-<img src="/2023/06/16/schema-registry%E5%8F%A3%E4%BB%A4%E8%AE%A4%E8%AF%81%E9%85%8D%E7%BD%AE/schemaregistry.png" srcset="/img/loading.gif" lazyload class="" title="schema_registry">
+<h3 id="1-Zookeeper"><a href="#1-Zookeeper" class="headerlink" title="1. Zookeeper"></a>1. Zookeeper</h3><h4 id="1-配置-2"><a href="#1-配置-2" class="headerlink" title="1. 配置"></a>1. 配置</h4><p>首先添加一个jaas设置用户名密码。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs bash">Server &#123;<br>       org.apache.zookeeper.server.auth.DigestLoginModule required<br>       user_admin=<span class="hljs-string">&quot;123456&quot;</span><br>       user_root=<span class="hljs-string">&quot;123456&quot;</span><br>       ;<br>&#125;;<br>Client &#123;<br>       org.apache.zookeeper.server.auth.DigestLoginModule required<br>       username=<span class="hljs-string">&quot;admin&quot;</span><br>       password=<span class="hljs-string">&quot;123456&quot;</span><br>       ;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<p>在zookeeper.properties中也要加入对应参数。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">###########################</span><br>authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider<br>requireClientAuthScheme=sasl<br>jaasLoginRenew=3600000<br></code></pre></td></tr></table></figure>
 
 
 
-<h2 id="1-安装包"><a href="#1-安装包" class="headerlink" title="1. 安装包"></a>1. 安装包</h2><p>在 <a target="_blank" rel="noopener" href="https://www.confluent.io/previous-versions/">schema registry安装包下载 </a> 下载需要的版本，并解压。</p>
-<hr>
-<h2 id="2-配置"><a href="#2-配置" class="headerlink" title="2. 配置"></a>2. 配置</h2><p>配置文件位于<strong>etc&#x2F;schema-registry</strong>目录下，口令认证的话首先需要创建文件记录账号用户名密码及对应的角色。</p>
-<p>文件schema-registry-password-file:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">user:password,role<br></code></pre></td></tr></table></figure>
+<h4 id="2-启动-2"><a href="#2-启动-2" class="headerlink" title="2. 启动"></a>2. 启动</h4><p>注意，口令认证的话需要export参数，建议直接将这两行写为脚本。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">export</span> KAFKA_OPTS=<span class="hljs-string">&quot;-Djava.security.auth.login.config=&#123;addr&#125;/zookeeper_jaas.conf&quot;</span><br>./zookeeper-server-start.sh /usr/local/kafka/config/zookeeper.properties  &gt;&gt; &#123;日志输出目的地&#125; 2&gt;&amp;1 &amp;<br></code></pre></td></tr></table></figure>
 
-<hr>
-<p>然后需要创建jaas文件schema-registry-jaas-config.conf，读取用户名密码配置:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash">SchemaRegistry-Props &#123;<br>  org.eclipse.jetty.jaas.spi.PropertyFileLoginModule required<br>  file=<span class="hljs-string">&quot;&#123;addr&#125;/schema-registry-password-file&quot;</span><br>  debug=<span class="hljs-string">&quot;false&quot;</span>;<br>&#125;;<br></code></pre></td></tr></table></figure>
 
-<hr>
-<p>最后就是schema-registry.properties的配置。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">listeners=http://&#123;ip&#125;:8081<br></code></pre></td></tr></table></figure>
 
-<p>配置url和port。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># basic auth</span><br>authentication.method=BASIC<br>authentication.roles=admin,user<br>authentication.realm=SchemaRegistry-Props<br><br>basic.auth.credentials.source=USER_INFO<br>basic.auth.user.info=user:password<br><br>mode.mutability=<span class="hljs-literal">true</span><br></code></pre></td></tr></table></figure>
+<h3 id="2-Kafka"><a href="#2-Kafka" class="headerlink" title="2. Kafka"></a>2. Kafka</h3><h4 id="1-配置-3"><a href="#1-配置-3" class="headerlink" title="1. 配置"></a>1. 配置</h4><p>首先添加一个jaas设置用户名密码。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs bash">KafkaServer&#123;<br>    org.apache.kafka.common.security.plain.PlainLoginModule required<br>    username=<span class="hljs-string">&quot;root&quot;</span><br>    password=<span class="hljs-string">&quot;123456&quot;</span><br>    user_root=<span class="hljs-string">&quot;123456&quot;</span><br>    user_k1=<span class="hljs-string">&quot;k1123456&quot;</span><br>    user_k2=<span class="hljs-string">&quot;k2123456&quot;</span><br>    user_k3=<span class="hljs-string">&quot;k3123456&quot;</span>;<br>&#125;;<br>Client&#123;<br>    org.apache.zookeeper.server.auth.DigestLoginModule required<br>    username=<span class="hljs-string">&quot;root&quot;</span><br>    password=<span class="hljs-string">&quot;123456&quot;</span>;<br>&#125;;<br></code></pre></td></tr></table></figure>
 
-<hr>
-<p>如果kafka有口令认证的话，要注意加上对应的配置：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">kafkastore.bootstrap.servers=SASL_PLAINTEXT://&#123;ip&#125;:9092<br><br><span class="hljs-comment"># kafka auth</span><br>kafkastore.security.protocol=SASL_PLAINTEXT<br>kafkastore.sasl.mechanism=PLAIN<br>kafkastore.sasl.jaas.config=org.apache.kafka.common.security.scram.ScramLoginModule required username=<span class="hljs-string">&quot;user&quot;</span> password=<span class="hljs-string">&quot;password&quot;</span>;<br></code></pre></td></tr></table></figure>
+<p>在server.properties中也要加入对应参数。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment">#################################</span><br>listeners=SASL_PLAINTEXT://&#123;ip&#125;:9092<br>advertised.listeners=SASL_PLAINTEXT://&#123;ip&#125;:9092<br>security.inter.broker.protocol=SASL_PLAINTEXT<br>sasl.enabled.mechanisms=PLAIN<br>sasl.mechanism.inter.broker.protocol=PLAIN<br></code></pre></td></tr></table></figure>
 
-<hr>
-<h2 id="3-启动"><a href="#3-启动" class="headerlink" title="3. 启动"></a>3. 启动</h2><p>启动脚本在<strong>bin</strong>目录下。</p>
-<p>由于需要导入参数和后台启动，建议写个脚本。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">export</span> SCHEMA_REGISTRY_OPTS=-Djava.security.auth.login.config=&#123;addr&#125;/schema-registry-jaas-config.conf<br>/usr/local/schema-registry/bin/schema-registry-start /usr/local/schema-registry/etc/schema-registry/schema-registry.properties &gt;&gt; &#123;<span class="hljs-built_in">log</span> file&#125; 2&gt;&amp;1 &amp;<br></code></pre></td></tr></table></figure>
 
-<p>将{log file}替换为实际输出日志的位置。</p>
-<hr>
-<h2 id="4-验证"><a href="#4-验证" class="headerlink" title="4. 验证"></a>4. 验证</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">curl  http://&#123;ip&#125;:8081/subjects<br></code></pre></td></tr></table></figure>
 
-<p>会响应</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">&#123;<span class="hljs-string">&quot;error_code&quot;</span>:401,<span class="hljs-string">&quot;message&quot;</span>:<span class="hljs-string">&quot;Unauthorized&quot;</span>&#125;<br></code></pre></td></tr></table></figure>
 
-<p>因为需要加上用户名密码:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">curl -u user:password http://&#123;ip&#125;:8081/subjects<br></code></pre></td></tr></table></figure>
 
-<p>得到的响应是一个列表就证明成功啦！</p>
+<h4 id="2-启动-3"><a href="#2-启动-3" class="headerlink" title="2. 启动"></a>2. 启动</h4><p>注意，口令认证的话需要export参数，建议直接将这两行写为脚本。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">export</span> KAFKA_OPTS=<span class="hljs-string">&quot;-Djava.security.auth.login.config=&#123;addr&#125;/kafka_jaas.conf&quot;</span><br>/usr/local/kafka/bin/kafka-server-start.sh /usr/local/kafka/config/server.properties  &gt;&gt; &#123;日志输出目的地&#125; 2&gt;&amp;1 &amp;<br></code></pre></td></tr></table></figure>
+
 
                 
               </div>
@@ -369,7 +379,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/operation/" class="category-chain-item">operation</a>
+  <a href="/categories/operate/" class="category-chain-item">operate</a>
   
   
 
@@ -384,7 +394,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/schema-registry/">#schema-registry</a>
+        <a href="/tags/kafka/">#kafka</a>
       
     </div>
   
@@ -396,8 +406,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>schema registry口令认证配置</div>
-      <div>https://shen-xmas.github.io/2023/06/16/schema-registry口令认证配置/</div>
+      <div>Kafka单机搭建(信任认证/口令认证)</div>
+      <div>https://shen-xmas.github.io/2023/06/16/Kafka单机搭建/</div>
     </div>
     <div class="license-meta">
       
@@ -441,21 +451,15 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2023/09/11/%E8%AF%BB%E4%B9%A6%E6%91%98%E8%A6%81%E4%B8%80/" title="读书摘要一">
+                      <a href="/2023/06/16/schema-registry%E5%8F%A3%E4%BB%A4%E8%AE%A4%E8%AF%81%E9%85%8D%E7%BD%AE/" title="schema registry口令认证配置">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">读书摘要一</span>
+                        <span class="hidden-mobile">schema registry口令认证配置</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
                   </article>
                   <article class="post-next col-6">
                     
-                    
-                      <a href="/2023/06/16/Kafka%E5%8D%95%E6%9C%BA%E6%90%AD%E5%BB%BA/" title="Kafka单机搭建(信任认证/口令认证)">
-                        <span class="hidden-mobile">Kafka单机搭建(信任认证/口令认证)</span>
-                        <span class="visible-mobile">下一篇</span>
-                        <i class="iconfont icon-arrowright"></i>
-                      </a>
                     
                   </article>
                 </div>
